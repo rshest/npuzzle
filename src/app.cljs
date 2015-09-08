@@ -6,12 +6,12 @@
               [goog.dom :as dom]
               [goog.events :as events]
               [goog.style :as style]
+              [goog.array]
               [npuzzle]))
 
 (def BLOCK-WIDTH 50)
 (def BLOCK-MARGIN 2)
 (def BOARD)
-(def BLOCKS)
 (def NMOVES 0)
 (def FPS 40)
 
@@ -31,7 +31,7 @@
            13  32  7    0  5   23
            27  8   20  11  29  15])
 
-(defn move-block [block x y]
+(defn put-block [block x y]
   (style/setStyle block (clj->js
                          {:left (str (* x BLOCK-WIDTH) "px")
                           :top  (str (* y BLOCK-WIDTH) "px")})))
@@ -40,49 +40,63 @@
   (let [n      (* duration FPS)
         dt     (/ 1000 FPS)]
     (go-loop [i 0]
-           (f (/ i n))
-           (<! (timeout dt))
-           (if (< i n) (recur (+ i 1))))))
+      (f (/ i n))
+      (<! (timeout dt))
+      (if (< i n) (recur (inc i))))))
 
 (defn lerp [a b t] (+ (* t b) (* (- 1 t) a)))
 
-(defn play-moves [[num xs] n]
-  (let [block    (BLOCKS (- num 1))
+(defn get-block-elem [num]
+  (let [board  (dom/getElement "board")
+        blocks (goog.array/toArray (dom/getChildren board))
+        block  (dom/getElement (str num) board)]
+    block))
+
+(defn play-move [n num]
+  (let [block    (get-block-elem num)
         from     (npuzzle/get-idx BOARD num)
         to       (npuzzle/get-idx BOARD 0)
         [x0 y0]  (npuzzle/get-pos n from)
         [x1 y1]  (npuzzle/get-pos n to)]
-  (if (npuzzle/can-move n x0 y0 x1 y1) (do
+  (if (npuzzle/neighbor? x0 y0 x1 y1) (do
     (set! BOARD (npuzzle/move BOARD from to))
     (set! NMOVES (inc NMOVES))
     (transition
-     0.1 #(move-block block (lerp x0 x1 %) (lerp y0 y1 %)))
-    (play-moves xs)))))
+     0.1 #(put-block block (lerp x0 x1 %) (lerp y0 y1 %)))))))
 
+(defn play-moves [n moves]
+  (go-loop [i 0]
+          (if (< i (count moves))
+             (do (<! (play-move n (nth moves i)))
+                 (recur (inc i))))))
 
-(defn click-block [n num] (play-moves [num] n))
+(defn click-block [n num]
+  ;(play-moves n (npuzzle/solve n BOARD)))
+  (play-moves n (npuzzle/move-blank-to n BOARD num)))
+  ;(play-move n num))
 
 
 (defn make-block [n idx num]
-  (let [block (dom/createDom
-              "div" (clj->js {:class "block"}) (str num))
+  (let [nstr  (str num)
+        cl    (if (> num 0) "block" "hidden")
+        block (dom/createDom
+              "div" (clj->js {:class cl :id nstr}) nstr)
         [x y] (npuzzle/get-pos n idx)]
-    (do (move-block block x y))
+    (put-block block x y)
     (.listen goog.events block
              goog.events.EventType.CLICK
              #(click-block n num))
-    (if (> num 0) block)))
+    block))
 
 
 (defn make-board [n cells]
   (let [s (str (+ (* n BLOCK-WIDTH) BLOCK-MARGIN) "px")
         board  (dom/getElement "board")
         blocks (map-indexed (partial make-block n) cells)]
-    (do (dom/removeChildren board))
+    (dom/removeChildren board)
     (style/setStyle board (clj->js {:width s :height s}))
-    (doseq [b blocks] (dom/append board b))
-    (to-array blocks)))
+    (doseq [b blocks] (dom/append board b))))
 
-(set! BOARD b4x4)
-(set! (.-onload js/window) #(set! BLOCKS (make-board 4 BOARD)))
+(set! BOARD b6x6)
+(set! (.-onload js/window) #(make-board 6 BOARD))
 
