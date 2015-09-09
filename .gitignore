@@ -1,2 +1,4 @@
 out
 /*.nrepl-port
+stale
+/target/classes/META-INF/maven/npuzzle/npuzzle/pom.properties

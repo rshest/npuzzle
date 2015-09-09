@@ -47,10 +47,11 @@
 (defn lerp [a b t] (+ (* t b) (* (- 1 t) a)))
 
 (defn get-block-elem [num]
-  (let [board  (dom/getElement "board")
-        blocks (goog.array/toArray (dom/getChildren board))
-        block  (dom/getElement (str num) board)]
-    block))
+  (->> "board"
+       dom/getElement
+       dom/getChildren
+       goog.array/toArray
+       (dom/getElement (str num))))
 
 (defn play-move [n num]
   (let [block    (get-block-elem num)
@@ -58,7 +59,7 @@
         to       (npuzzle/get-idx BOARD 0)
         [x0 y0]  (npuzzle/get-pos n from)
         [x1 y1]  (npuzzle/get-pos n to)]
-  (if (npuzzle/neighbor? x0 y0 x1 y1) (do
+  (if (npuzzle/neighbor? [x0 y0] [x1 y1]) (do
     (set! BOARD (npuzzle/move BOARD from to))
     (set! NMOVES (inc NMOVES))
     (transition
@@ -72,7 +73,8 @@
 
 (defn click-block [n num]
   ;(play-moves n (npuzzle/solve n BOARD)))
-  (play-moves n (npuzzle/move-blank-to n BOARD num)))
+  (play-moves n (npuzzle/move-piece-to
+                 n BOARD (npuzzle/get-num-pos n BOARD num) num)))
   ;(play-move n num))
 
 
