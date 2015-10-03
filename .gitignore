@@ -2,3 +2,8 @@ out
 /*.nrepl-port
 stale
 /target/classes/META-INF/maven/npuzzle/npuzzle/pom.properties
+/out-release
+/out-test
+/target/cljsbuild-compiler-0
+cljs
+cljsbuild-compiler-1

@@ -9,11 +9,12 @@
               [goog.array]
               [npuzzle]))
 
-(def BLOCK-WIDTH 50)
-(def BLOCK-MARGIN 2)
-(def BOARD)
-(def NMOVES 0)
-(def FPS 40)
+(def block-width 50)
+(def block-margin 2)
+(def fps 40)
+
+(def ^:dynamic *board*)
+(def ^:dynamic *nmoves* 0)
 
 (def b3x3 [1 6 0
            8 4 2
@@ -33,12 +34,12 @@
 
 (defn put-block [block x y]
   (style/setStyle block (clj->js
-                         {:left (str (* x BLOCK-WIDTH) "px")
-                          :top  (str (* y BLOCK-WIDTH) "px")})))
+                         {:left (str (* x block-width) "px")
+                          :top  (str (* y block-width) "px")})))
 
 (defn transition [duration f]
-  (let [n      (* duration FPS)
-        dt     (/ 1000 FPS)]
+  (let [n      (* duration fps)
+        dt     (/ 1000 fps)]
     (go-loop [i 0]
       (f (/ i n))
       (<! (timeout dt))
@@ -53,28 +54,36 @@
        goog.array/toArray
        (dom/getElement (str num))))
 
+(defn mask-left-top
+  "Returns 'masking function' ...
+  "
+  [[px py]]
+  (fn [[x y]]
+    (and (>= y py) (>= x px))))
+
 (defn play-move [n num]
   (let [block    (get-block-elem num)
-        from     (npuzzle/get-idx BOARD num)
-        to       (npuzzle/get-idx BOARD 0)
+        from     (npuzzle/get-idx *board* num)
+        to       (npuzzle/get-idx *board* 0)
         [x0 y0]  (npuzzle/get-pos n from)
         [x1 y1]  (npuzzle/get-pos n to)]
   (if (npuzzle/neighbor? [x0 y0] [x1 y1]) (do
-    (set! BOARD (npuzzle/move BOARD from to))
-    (set! NMOVES (inc NMOVES))
+    (set! *board* (npuzzle/move *board* from to))
+    (set! *nmoves* (inc *nmoves*))
+    (dom/setTextContent (dom/getElement "nmoves") (str *nmoves*))
     (transition
      0.1 #(put-block block (lerp x0 x1 %) (lerp y0 y1 %)))))))
 
 (defn play-moves [n moves]
   (go-loop [i 0]
-          (if (< i (count moves))
-             (do (<! (play-move n (nth moves i)))
-                 (recur (inc i))))))
+          (when (< i (count moves))
+                (<! (play-move n (nth moves i)))
+                (recur (inc i)))))
 
 (defn click-block [n num]
-  ;(play-moves n (npuzzle/solve n BOARD)))
-  (play-moves n (npuzzle/move-piece-to
-                 n BOARD (npuzzle/get-num-pos n BOARD num) num)))
+  ;(play-moves n (npuzzle/solve n *board*)))
+  (play-moves n (npuzzle/move-piece
+                 n *board* (npuzzle/get-pos n (dec num)) num)))
   ;(play-move n num))
 
 
@@ -92,13 +101,13 @@
 
 
 (defn make-board [n cells]
-  (let [s (str (+ (* n BLOCK-WIDTH) BLOCK-MARGIN) "px")
+  (let [s (str (+ (* n block-width) block-margin) "px")
         board  (dom/getElement "board")
         blocks (map-indexed (partial make-block n) cells)]
     (dom/removeChildren board)
     (style/setStyle board (clj->js {:width s :height s}))
     (doseq [b blocks] (dom/append board b))))
 
-(set! BOARD b6x6)
-(set! (.-onload js/window) #(make-board 6 BOARD))
+(set! *board* b6x6)
+(set! (.-onload js/window) #(make-board 6 *board*))
 
