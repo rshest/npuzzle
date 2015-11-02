@@ -1,17 +1,19 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>N-Puzzle</title>
+        <title>NPuzzle</title>
         <link rel="stylesheet" type="text/css" href="css/npuzzle.css"/>
-        <script src="out-test/goog/base.js" type="text/javascript"></script>
-        <script src="out-test/main.test.js" type="text/javascript"></script>
+        <script src="out/goog/base.js" type="text/javascript"></script>
+        <script src="out/main.js" type="text/javascript"></script>
         <script type="text/javascript">goog.require("app");</script>
     </head>
     <body>
         <div id="board"></div>
-        <div>
+        <div class="panel">
+            <span id="solve" class="solve">SOLVE</span>
             <span class="caption">Moves:</span>
             <span id="nmoves">0</span>
         </div>
+        <div class="panel" id="moves"></div>
     </body>
 </html>

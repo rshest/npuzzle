@@ -6,6 +6,20 @@
   position: relative;
   display: block;
   border-radius: 4px;
+
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+#moves {
+  margin: 8px;
+  float: left;
+  width: 100%;
+  color: #A7A37E;
 }
 
 .block {
@@ -33,6 +47,40 @@
   visibility: hidden;
 }
 
+.panel {
+  padding-top: 8px;
+  color: #002F2F;
+  vertical-align: bottom;
+  font-size: 20px;
+}
+
 .caption {
   font-weight: bold;
+  margin-left: 8px;
 }
+
+.solve {
+  border-radius: 5px;
+  border: 1px solid #A7A37E;
+  background-color: #EFECCA;
+  color: #046380;
+  padding: 8px;
+  width: auto;
+  float: left;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+}
+.solve:hover {
+  background-color: #E6E2AF;
+}
+
+.btn_sel {
+  background-color: #046380;
+  color: #EFECCA;
+}
+.btn_sel:hover {
+  background-color: #147390;
+}
+
+

@@ -7,3 +7,5 @@ stale
 /target/cljsbuild-compiler-0
 cljs
 cljsbuild-compiler-1
+.idea
+unicode
