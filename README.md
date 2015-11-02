@@ -1,4 +1,5 @@
 ClojureScript N-puzzle solver.
+
 ![](docs/screen.png)
 
 
